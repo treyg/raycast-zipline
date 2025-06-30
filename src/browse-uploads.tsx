@@ -23,9 +23,9 @@ import {
 } from "./utils/preferences";
 
 export default function BrowseUploads() {
-  const [files, setFiles] = useState([]);
+  const [files, setFiles] = useState<ZiplineFile[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState();
+  const [error, setError] = useState<string | undefined>();
   const [searchText, setSearchText] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);

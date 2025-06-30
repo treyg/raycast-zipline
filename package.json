@@ -32,7 +32,27 @@
       "name": "upload-clipboard-instant",
       "title": "Upload Clipboard Text",
       "description": "Instantly upload clipboard text to Zipline",
-      "mode": "no-view"
+      "mode": "no-view",
+      "arguments": [
+        {
+          "name": "fileType",
+          "type": "dropdown",
+          "placeholder": "File Type",
+          "required": false,
+          "data": [
+            { "title": "Text", "value": "txt" },
+            { "title": "Markdown", "value": "md" },
+            { "title": "JSON", "value": "json" },
+            { "title": "JavaScript", "value": "js" },
+            { "title": "TypeScript", "value": "ts" },
+            { "title": "Python", "value": "py" },
+            { "title": "HTML", "value": "html" },
+            { "title": "CSS", "value": "css" },
+            { "title": "SQL", "value": "sql" },
+            { "title": "XML", "value": "xml" }
+          ]
+        }
+      ]
     }
   ],
   "preferences": [

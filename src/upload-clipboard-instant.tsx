@@ -4,11 +4,18 @@ import {
   Clipboard,
   closeMainWindow,
   showHUD,
+  LaunchProps,
 } from "@raycast/api";
 import { createZiplineClient } from "./utils/preferences";
 
-export default async function UploadClipboardInstant() {
+interface UploadClipboardInstantArguments {
+  fileType?: string;
+}
+
+export default async function UploadClipboardInstant(props: LaunchProps<{ arguments: UploadClipboardInstantArguments }>) {
   try {
+    const { fileType } = props.arguments;
+    
     // Get clipboard text
     const clipboardText = await Clipboard.readText();
     
@@ -30,7 +37,8 @@ export default async function UploadClipboardInstant() {
     const path = require('path');
     
     const tempDir = os.tmpdir();
-    const filename = `clipboard-${Date.now()}.txt`;
+    const extension = fileType || "txt";
+    const filename = `clipboard-${Date.now()}.${extension}`;
     const tempFilePath = path.join(tempDir, filename);
     
     // Write text to temporary file
@@ -38,6 +46,7 @@ export default async function UploadClipboardInstant() {
     
     const uploadResponse = await ziplineClient.uploadFile(tempFilePath, filename, {
       format: "RANDOM",
+      fileExtension: extension,
     });
 
     // Clean up temporary file

@@ -74,6 +74,7 @@ export interface UploadOptions {
   embed?: boolean;
   maxViews?: number;
   expiresAt?: string;
+  fileExtension?: string;
 }
 
 export interface FileFilterOptions {

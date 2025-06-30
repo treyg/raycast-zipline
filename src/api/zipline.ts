@@ -90,7 +90,29 @@ export class ZiplineAPI {
 
     const formData = new FormData();
     const fileBuffer = fs.readFileSync(filePath);
-    formData.append("file", fileBuffer, fileName);
+    
+    // Determine MIME type based on file extension
+    let mimeType = "text/plain";
+    if (options.fileExtension) {
+      const mimeTypes: Record<string, string> = {
+        "txt": "text/plain",
+        "md": "text/markdown",
+        "js": "text/javascript",
+        "ts": "text/typescript",
+        "json": "application/json",
+        "html": "text/html",
+        "css": "text/css",
+        "py": "text/x-python",
+        "sql": "text/x-sql",
+        "xml": "text/xml"
+      };
+      mimeType = mimeTypes[options.fileExtension] || "text/plain";
+    }
+    
+    formData.append("file", fileBuffer, {
+      filename: fileName,
+      contentType: mimeType
+    });
 
     const headers: Record<string, string> = {
       Authorization: this.apiToken,
@@ -107,6 +129,7 @@ export class ZiplineAPI {
       headers["x-zipline-max-views"] = options.maxViews.toString();
     if (options.expiresAt) headers["x-zipline-deletes-at"] = options.expiresAt;
     if (options.filename) headers["x-zipline-filename"] = options.filename;
+    if (options.fileExtension) headers["x-zipline-file-extension"] = options.fileExtension;
 
     const response = await fetch(`${this.baseUrl}/api/upload`, {
       method: "POST",
