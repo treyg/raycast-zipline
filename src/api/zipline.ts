@@ -11,8 +11,8 @@ import {
 } from "../types/zipline";
 
 export class ZiplineAPI {
-  private baseUrl: string;
-  private apiToken: string;
+  public baseUrl: string;
+  public apiToken: string;
 
   constructor(baseUrl: string, apiToken: string) {
     this.baseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
@@ -27,79 +27,122 @@ export class ZiplineAPI {
     const headers = {
       Authorization: this.apiToken,
       "Content-Type": "application/json",
-      ...options.headers,
+      ...(options.headers as Record<string, string>),
     };
 
     const response = await fetch(url, {
       ...options,
       headers,
-    });
+    } as any);
 
     if (!response.ok) {
-      const errorData = await response.json() as ZiplineError;
-      throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+      let errorMessage;
+      try {
+        const errorData = (await response.json()) as ZiplineError;
+        errorMessage =
+          errorData.message ||
+          errorData.error ||
+          `HTTP ${response.status}: ${response.statusText}`;
+      } catch (e) {
+        errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      }
+      throw new Error(errorMessage);
     }
 
     return response.json() as Promise<T>;
   }
 
-  async getUserFiles(options: FileFilterOptions = {}): Promise<ZiplineFilesResponse> {
+  async getUserFiles(options: FileFilterOptions = {}): Promise<ZiplineFile[]> {
     const params = new URLSearchParams();
-    
+
     if (options.search) params.append("filter", options.search);
     if (options.mimetype) params.append("mimetype", options.mimetype);
-    if (options.favorite !== undefined) params.append("favorite", options.favorite.toString());
-    if (options.page) params.append("page", options.page.toString());
-    if (options.limit) params.append("limit", options.limit.toString());
+    if (options.favorite !== undefined)
+      params.append("favorite", options.favorite.toString());
 
-    const queryString = params.toString();
-    const endpoint = queryString ? `/api/user/files?${queryString}` : "/api/user/files";
+    // Page parameter is required
+    params.append("page", (options.page || 1).toString());
 
-    return this.makeRequest<ZiplineFilesResponse>(endpoint);
+    const endpoint = `/api/user/files?${params.toString()}`;
+
+    const response = await this.makeRequest<{ page: ZiplineFile[] }>(endpoint);
+    return response.page || [];
   }
 
-  async uploadFile(file: File, options: Partial<UploadOptions> = {}): Promise<ZiplineUploadResponse> {
-    const formData = new FormData();
-    formData.append("file", file);
+  async uploadFile(
+    filePath: string,
+    fileName: string,
+    options: Partial<UploadOptions> = {}
+  ): Promise<ZiplineUploadResponse> {
+    const fs = require("fs");
+    const FormData = require("form-data");
 
-    if (options.filename) formData.append("filename", options.filename);
-    if (options.format) formData.append("format", options.format);
-    if (options.overrideDomain) formData.append("overrideDomain", options.overrideDomain);
-    if (options.originalName) formData.append("originalName", options.originalName.toString());
-    if (options.password) formData.append("password", options.password);
-    if (options.embed) formData.append("embed", options.embed.toString());
-    if (options.maxViews) formData.append("maxViews", options.maxViews.toString());
-    if (options.expiresAt) formData.append("expiresAt", options.expiresAt);
+    // Check if file exists and has content
+    if (!fs.existsSync(filePath)) {
+      throw new Error(`File does not exist: ${filePath}`);
+    }
+
+    const fileStats = fs.statSync(filePath);
+
+    if (fileStats.size === 0) {
+      throw new Error(`File is empty: ${filePath}`);
+    }
+
+    const formData = new FormData();
+    const fileBuffer = fs.readFileSync(filePath);
+    formData.append("file", fileBuffer, fileName);
+
+    const headers: Record<string, string> = {
+      Authorization: this.apiToken,
+      ...formData.getHeaders(),
+    };
+
+    if (options.format)
+      headers["x-zipline-format"] = options.format.toLowerCase();
+    if (options.overrideDomain)
+      headers["x-zipline-domain"] = options.overrideDomain;
+    if (options.originalName) headers["x-zipline-original-name"] = "true";
+    if (options.password) headers["x-zipline-password"] = options.password;
+    if (options.maxViews)
+      headers["x-zipline-max-views"] = options.maxViews.toString();
+    if (options.expiresAt) headers["x-zipline-deletes-at"] = options.expiresAt;
+    if (options.filename) headers["x-zipline-filename"] = options.filename;
 
     const response = await fetch(`${this.baseUrl}/api/upload`, {
       method: "POST",
-      headers: {
-        Authorization: this.apiToken,
-      },
-      body: formData,
+      headers,
+      body: formData as any,
     });
 
     if (!response.ok) {
-      const errorData = await response.json() as ZiplineError;
-      throw new Error(errorData.message || `Upload failed: ${response.statusText}`);
+      const errorText = await response.text();
+      throw new Error(`Upload failed: ${response.status} ${errorText}`);
     }
 
-    return response.json() as Promise<ZiplineUploadResponse>;
+    const responseData = await response.json();
+    return responseData as ZiplineUploadResponse;
   }
 
-  async deleteFile(fileId: number): Promise<void> {
+  async deleteFile(fileId: string): Promise<void> {
     await this.makeRequest(`/api/user/files/${fileId}`, {
       method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        delete: "file",
+        id: fileId
+      }),
     });
   }
 
-  async toggleFileFavorite(fileId: number): Promise<void> {
+  async toggleFileFavorite(fileId: string): Promise<void> {
     await this.makeRequest(`/api/user/files/${fileId}/favorite`, {
       method: "PATCH",
     });
   }
 
-  async getFileById(fileId: number): Promise<ZiplineFile> {
+  async getFileById(fileId: string): Promise<ZiplineFile> {
     return this.makeRequest<ZiplineFile>(`/api/user/files/${fileId}`);
   }
 

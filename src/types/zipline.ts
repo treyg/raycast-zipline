@@ -1,23 +1,29 @@
 export interface ZiplineFile {
-  id: number;
-  filename: string;
-  mimetype: string;
-  size: number;
-  url: string;
-  upload_date: string;
-  views: number;
-  favorite: boolean;
-  embedded: boolean;
+  id: string;
+  name: string;
   originalName?: string;
-  password?: string;
+  type: string;
+  url: string;
+  createdAt: string;
+  deletesAt?: string;
+  views: number;
   maxViews?: number;
-  expiresAt?: string;
+  size: number;
+  favorite: boolean;
+  password?: string;
 }
 
 export interface ZiplineUploadResponse {
-  files: string[];
-  url: string;
-  upload_date: string;
+  files: {
+    id: string;
+    type: string;
+    url: string;
+    pending?: boolean;
+  }[];
+  deletesAt?: string;
+  assumedMimetypes?: boolean[];
+  partialSuccess?: boolean;
+  partialIdentifier?: string;
 }
 
 export interface ZiplineFilesResponse {
@@ -60,9 +66,8 @@ export interface ZiplinePreferences {
 }
 
 export interface UploadOptions {
-  file: File | string;
   filename?: string;
-  format?: "RANDOM" | "DATE" | "UUID" | "GFYCAT" | "ORIGINAL";
+  format?: "RANDOM" | "DATE" | "UUID" | "GFYCAT" | "NAME";
   overrideDomain?: string;
   originalName?: boolean;
   password?: string;

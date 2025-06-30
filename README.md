@@ -1,82 +1,84 @@
-# Zipline Raycast Extension
+<div align="center">
 
-A Raycast extension for managing your self-hosted Zipline uploads. Browse, upload, and share files with ease directly from Raycast.
+# Zipline
+
+</div>
+
+<div align="center">
+  <a href="https://github.com/treyg">
+    <img src="https://img.shields.io/github/followers/treyg?label=Follow%20treyg&style=social" alt="Follow @treyg">
+  </a>
+  <a href="https://github.com/treyg/raycast-zipline/stargazers">
+    <img src="https://img.shields.io/github/stars/treyg/raycast-zipline?style=social" alt="Stars">
+  </a>
+  <a href="https://www.raycast.com/treyg/zipline">
+    <img src="https://img.shields.io/badge/Raycast-Store-red.svg" alt="Zipline on Raycast store.">
+  </a>
+
+  <p style="margin-top: 20px;">Manage your self-hosted Zipline uploads directly from Raycast. Browse, upload, and share files and text from your clipboard.</p>
+
+</div>
 
 ## Features
 
-- **Browse Uploads**: View and search through your uploaded files with pagination
-- **Upload Files**: Upload new files with customizable options (filename format, password protection, expiration, etc.)
-- **Recent Uploads**: Quick access to your most recently uploaded files
-- **File Management**: Copy URLs, toggle favorites, and delete files
-- **Rich Previews**: See file types, sizes, upload dates, and view counts at a glance
-
-## Setup
-
-1. Install the extension in Raycast
-2. Configure your Zipline instance URL and API token in the extension preferences
-3. Optionally set your preferred page size for browsing uploads
-
-### Required Preferences
-
-- **Zipline URL**: Your Zipline instance URL (e.g., `https://zipline.example.com`)
-- **API Token**: Your Zipline API token (found in your Zipline user settings)
-
-### Optional Preferences
-
-- **Page Size**: Number of uploads to display per page (default: 20)
+- **Instant clipboard upload** - Upload clipboard text with one command
+- **File upload with options** - Password protection, expiration dates, custom formats
+- **Browse & search uploads** - View all your files with pagination and filtering
+- **Recent uploads** - Quick access to your latest uploads
+- **File management** - Copy URLs, toggle favorites, delete files
+- **Rich metadata** - File types, sizes, upload dates, view counts
 
 ## Commands
 
+### Upload Clipboard (Instant)
+
+- Instantly upload clipboard text to Zipline
+- Automatic URL copying to clipboard
+- No forms or dialogs - just pure speed
+
+### Upload File
+
+- Upload single or multiple files with full options
+- Filename formats: Random, Date, UUID, Gfycat-style, Original name
+- Optional password protection and expiration dates
+- Automatic URL copying to clipboard
+
 ### Browse Uploads
+
 - Search and filter through all your uploads
 - Pagination support for large collections
 - Copy URLs, toggle favorites, and delete files
-- Keyboard shortcuts for quick navigation
-
-### Upload File
-- Upload single or multiple files
-- Customize filename format (Random, Date, UUID, Gfycat-style, Original)
-- Optional password protection
-- Set expiration dates and view limits
-- Automatic URL copying to clipboard
 
 ### Recent Uploads
+
 - Quick access to your 10 most recent uploads
 - Relative time display (e.g., "2 hours ago")
-- Same file management actions as Browse Uploads
+- Same management actions as Browse Uploads
 
-## Keyboard Shortcuts
+## Actions
 
-- `⌘ + F`: Toggle favorite status
-- `⌘ + R`: Refresh current view
-- `⌘ + ←/→`: Navigate between pages (in Browse Uploads)
-- `⌘ + Delete`: Delete file
+- Copy file URL (`↵`)
+- Toggle favorite (`⌘` + `F`)
+- Delete file (`⌘` + `⇧` + `Delete`)
+- Refresh view (`⌘` + `R`)
+- Navigate pages (`⌘` + `←/→`)
+
+## Preferences
+
+- **Zipline URL**: Your Zipline instance URL (e.g., `https://zipline.example.com`)
+- **API Token**: Your Zipline API token (found in your user settings)
+- **Page Size**: Number of uploads to display per page (default: 20)
+
+## Setup
+
+1. Install the extension from the Raycast store
+2. Open Raycast preferences and configure the Zipline extension:
+   - Enter your Zipline instance URL
+   - Add your API token from your Zipline user settings
+3. Start uploading and managing files instantly
 
 ## Requirements
 
-- Raycast 1.26.0 or higher
-- A self-hosted Zipline instance
+- Self-hosted Zipline instance (v3 or v4)
 - Valid Zipline API token
-
-## Development
-
-This extension is built with:
-- TypeScript
-- React
-- Raycast API
-- Node.js fetch for API calls
-
-To contribute or modify:
-
-1. Clone the repository
-2. Run `npm install`
-3. Run `npm run dev` to start development mode
-4. Make your changes and test in Raycast
-
-## License
-
-MIT License - see LICENSE file for details
-
-## Support
-
-For issues or feature requests, please create an issue in the GitHub repository.
+- Raycast 1.26.0 or higher

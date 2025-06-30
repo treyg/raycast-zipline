@@ -1,12 +1,12 @@
 {
   "name": "raycast-zipline",
   "title": "Zipline",
-  "description": "Manage your Zipline uploads - browse, upload, and share files easily",
+  "description": "Manage your Zipline uploads - browse, upload, and share files",
   "icon": "zipline-icon.png",
-  "author": "treygordon",
+  "author": "treyg",
   "categories": [
     "Productivity",
-    "Developer Tools"
+    "Self hosted"
   ],
   "license": "MIT",
   "commands": [
@@ -27,6 +27,12 @@
       "title": "Recent Uploads",
       "description": "View your most recent uploads",
       "mode": "view"
+    },
+    {
+      "name": "upload-clipboard-instant",
+      "title": "Upload Clipboard Text",
+      "description": "Instantly upload clipboard text to Zipline",
+      "mode": "no-view"
     }
   ],
   "preferences": [
@@ -56,18 +62,18 @@
     }
   ],
   "dependencies": {
-    "@raycast/api": "^1.48.9",
+    "@raycast/api": "^1.94.0",
+    "@raycast/utils": "^1.19.1",
+    "form-data": "^4.0.3",
     "node-fetch": "^3.3.0"
   },
   "devDependencies": {
-    "@types/node": "18.8.3",
-    "@types/react": "18.0.9",
-    "@typescript-eslint/eslint-plugin": "^5.0.0",
-    "@typescript-eslint/parser": "^5.0.0",
-    "eslint": "^8.0.0",
-    "eslint-config-prettier": "^8.3.0",
-    "prettier": "^2.5.1",
-    "typescript": "^4.4.3"
+    "@raycast/eslint-config": "^2.0.4",
+    "@types/node": "22.13.10",
+    "@types/react": "19.0.12",
+    "eslint": "^9.22.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.2"
   },
   "scripts": {
     "build": "ray build -e dist",

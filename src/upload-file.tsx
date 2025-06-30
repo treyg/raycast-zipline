@@ -11,13 +11,12 @@ import {
   environment,
 } from "@raycast/api";
 import { useState, useEffect } from "react";
-import { createZiplineClient } from "../utils/preferences";
-import { UploadOptions } from "../types/zipline";
-import { readFileSync } from "fs";
+import { createZiplineClient } from "./utils/preferences";
+import { UploadOptions } from "./types/zipline";
 
 interface FormValues {
   files: string[];
-  format: "RANDOM" | "DATE" | "UUID" | "GFYCAT" | "ORIGINAL";
+  format: "RANDOM" | "DATE" | "UUID" | "GFYCAT" | "NAME";
   originalName: boolean;
   password: string;
   embed: boolean;
@@ -45,7 +44,7 @@ export default function UploadFile() {
             }
           })
           .map((item) => item.path);
-        
+
         setSelectedFiles(filePaths);
       } catch (error) {
         // No files selected in Finder, that's okay
@@ -71,12 +70,7 @@ export default function UploadFile() {
       const uploadedUrls: string[] = [];
 
       for (const filePath of values.files) {
-        const fileBuffer = readFileSync(filePath);
         const fileName = filePath.split("/").pop() || "unknown";
-        
-        const file = new File([fileBuffer], fileName, {
-          type: "application/octet-stream",
-        });
 
         const options: Partial<UploadOptions> = {
           format: values.format,
@@ -99,12 +93,10 @@ export default function UploadFile() {
           options.expiresAt = values.expiresAt.trim();
         }
 
-        const response = await ziplineClient.uploadFile(file, options);
-        
+        const response = await ziplineClient.uploadFile(filePath, fileName, options);
+
         if (Array.isArray(response.files) && response.files.length > 0) {
-          uploadedUrls.push(response.files[0]);
-        } else if (response.url) {
-          uploadedUrls.push(response.url);
+          uploadedUrls.push(response.files[0].url);
         }
       }
 
@@ -129,7 +121,8 @@ export default function UploadFile() {
       showToast({
         style: Toast.Style.Failure,
         title: "Upload failed",
-        message: error instanceof Error ? error.message : "Unknown error occurred",
+        message:
+          error instanceof Error ? error.message : "Unknown error occurred",
       });
     } finally {
       setUploading(false);
@@ -169,7 +162,11 @@ export default function UploadFile() {
         <Form.Dropdown.Item value="DATE" title="Date-based" icon="📅" />
         <Form.Dropdown.Item value="UUID" title="UUID" icon="🔑" />
         <Form.Dropdown.Item value="GFYCAT" title="Gfycat-style" icon="🐱" />
-        <Form.Dropdown.Item value="ORIGINAL" title="Original filename" icon="📝" />
+        <Form.Dropdown.Item
+          value="NAME"
+          title="Original filename"
+          icon="📝"
+        />
       </Form.Dropdown>
 
       <Form.Checkbox

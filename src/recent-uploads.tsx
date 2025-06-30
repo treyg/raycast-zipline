@@ -7,10 +7,16 @@ import {
   Icon,
   Color,
   Clipboard,
+  open,
 } from "@raycast/api";
 import { useEffect, useState } from "react";
-import { ZiplineFile } from "../types/zipline";
-import { createZiplineClient, formatFileSize, formatDate, getMimeTypeIcon } from "../utils/preferences";
+import { ZiplineFile } from "./types/zipline";
+import {
+  createZiplineClient,
+  formatFileSize,
+  formatDate,
+  getMimeTypeIcon,
+} from "./utils/preferences";
 
 interface State {
   files: ZiplineFile[];
@@ -31,13 +37,13 @@ export default function RecentUploads() {
       setState((prev) => ({ ...prev, loading: true, error: undefined }));
 
       const response = await ziplineClient.getUserFiles({
-        limit: 10, // Show last 10 uploads
+        page: 1, // Required parameter
       });
 
-      // Sort by upload date (most recent first)
-      const sortedFiles = response.files.sort((a, b) => 
-        new Date(b.upload_date).getTime() - new Date(a.upload_date).getTime()
-      );
+      // Sort by upload date (most recent first) and take first 10
+      const sortedFiles = response
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 10);
 
       setState((prev) => ({
         ...prev,
@@ -48,9 +54,12 @@ export default function RecentUploads() {
       setState((prev) => ({
         ...prev,
         loading: false,
-        error: error instanceof Error ? error.message : "Failed to load recent files",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to load recent files",
       }));
-      
+
       showToast({
         style: Toast.Style.Failure,
         title: "Failed to load recent uploads",
@@ -91,21 +100,23 @@ export default function RecentUploads() {
   const getRelativeTime = (dateString: string): string => {
     const now = new Date();
     const uploadDate = new Date(dateString);
-    const diffInSeconds = Math.floor((now.getTime() - uploadDate.getTime()) / 1000);
+    const diffInSeconds = Math.floor(
+      (now.getTime() - uploadDate.getTime()) / 1000,
+    );
 
     if (diffInSeconds < 60) return "Just now";
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
-    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
-    
+    if (diffInSeconds < 3600)
+      return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+    if (diffInSeconds < 86400)
+      return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+    if (diffInSeconds < 604800)
+      return `${Math.floor(diffInSeconds / 86400)} days ago`;
+
     return formatDate(dateString);
   };
 
   return (
-    <List
-      isLoading={state.loading}
-      navigationTitle="Recent Uploads"
-    >
+    <List isLoading={state.loading} navigationTitle="Recent Uploads">
       {state.error ? (
         <List.EmptyView
           icon={Icon.ExclamationMark}
@@ -113,10 +124,10 @@ export default function RecentUploads() {
           description={state.error}
           actions={
             <ActionPanel>
-              <Action 
-                title="Retry" 
+              <Action
+                title="Retry"
                 icon={Icon.ArrowClockwise}
-                onAction={loadRecentFiles} 
+                onAction={loadRecentFiles}
               />
             </ActionPanel>
           }
@@ -131,16 +142,18 @@ export default function RecentUploads() {
         state.files.map((file, index) => (
           <List.Item
             key={file.id}
-            title={file.filename}
-            subtitle={formatFileSize(file.size)}
+            title={file.originalName || file.name}
+            subtitle={`${file.size} bytes`}
             icon={{
-              source: getMimeTypeIcon(file.mimetype),
+              source: getMimeTypeIcon(file.type),
               tintColor: file.favorite ? Color.Yellow : undefined,
             }}
             accessories={[
-              { text: getRelativeTime(file.upload_date) },
+              { text: getRelativeTime(file.createdAt) },
               { text: `${file.views} views` },
-              file.favorite ? { icon: { source: Icon.Star, tintColor: Color.Yellow } } : {},
+              file.favorite
+                ? { icon: { source: Icon.Star, tintColor: Color.Yellow } }
+                : {},
             ]}
             actions={
               <ActionPanel>
@@ -148,15 +161,25 @@ export default function RecentUploads() {
                   <Action
                     title="Copy URL"
                     icon={Icon.Link}
-                    onAction={() => handleCopyUrl(file.url)}
+                    onAction={() => {
+                      const fullUrl = `${ziplineClient.baseUrl}${file.url}`;
+                      handleCopyUrl(fullUrl);
+                    }}
                   />
                   <Action
                     title="Open in Browser"
                     icon={Icon.Globe}
-                    onAction={() => open(file.url)}
+                    onAction={() => {
+                      const fullUrl = `${ziplineClient.baseUrl}${file.url}`;
+                      open(fullUrl);
+                    }}
                   />
                   <Action
-                    title={file.favorite ? "Remove from Favorites" : "Add to Favorites"}
+                    title={
+                      file.favorite
+                        ? "Remove from Favorites"
+                        : "Add to Favorites"
+                    }
                     icon={file.favorite ? Icon.StarDisabled : Icon.Star}
                     onAction={() => handleToggleFavorite(file)}
                     shortcut={{ modifiers: ["cmd"], key: "f" }}

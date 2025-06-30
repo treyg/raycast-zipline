@@ -10,59 +10,51 @@ import {
   Clipboard,
   confirmAlert,
   Alert,
+  open,
 } from "@raycast/api";
-import { useEffect, useState } from "react";
-import { ZiplineFile, ZiplineFilesResponse } from "../types/zipline";
-import { createZiplineClient, formatFileSize, formatDate, getMimeTypeIcon, getPageSize } from "../utils/preferences";
-
-interface State {
-  files: ZiplineFile[];
-  loading: boolean;
-  error?: string;
-  searchText: string;
-  page: number;
-  totalPages: number;
-  totalCount: number;
-}
+import { useState, useEffect } from "react";
+import { ZiplineFile, ZiplineFilesResponse } from "./types/zipline";
+import {
+  createZiplineClient,
+  formatFileSize,
+  formatDate,
+  getMimeTypeIcon,
+  getPageSize,
+} from "./utils/preferences";
 
 export default function BrowseUploads() {
-  const [state, setState] = useState<State>({
-    files: [],
-    loading: true,
-    searchText: "",
-    page: 1,
-    totalPages: 1,
-    totalCount: 0,
-  });
+  const [files, setFiles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState();
+  const [searchText, setSearchText] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
 
-  const ziplineClient = createZiplineClient();
-  const pageSize = getPageSize();
 
-  const loadFiles = async (page: number = 1, search?: string) => {
+  const loadFiles = async (pageNum: number = 1, search?: string) => {
     try {
-      setState((prev) => ({ ...prev, loading: true, error: undefined }));
+      setLoading(true);
+      setError(undefined);
+      
+      const ziplineClient = createZiplineClient();
+      const pageSize = getPageSize();
 
-      const response: ZiplineFilesResponse = await ziplineClient.getUserFiles({
+      const response = await ziplineClient.getUserFiles({
         search: search || undefined,
-        page,
-        limit: pageSize,
+        page: pageNum,
       });
 
-      setState((prev) => ({
-        ...prev,
-        files: response.files,
-        loading: false,
-        page,
-        totalPages: response.pages,
-        totalCount: response.count,
-      }));
+
+      setFiles(response || []);
+      setLoading(false);
+      setPage(pageNum);
+      setTotalPages(1);
+      setTotalCount(response?.length || 0);
     } catch (error) {
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        error: error instanceof Error ? error.message : "Failed to load files",
-      }));
-      
+      setLoading(false);
+      setError(error instanceof Error ? error.message : "Failed to load files");
+
       showToast({
         style: Toast.Style.Failure,
         title: "Failed to load files",
@@ -76,31 +68,15 @@ export default function BrowseUploads() {
   }, []);
 
   const handleSearch = (text: string) => {
-    setState((prev) => ({ ...prev, searchText: text }));
+    setSearchText(text);
     loadFiles(1, text);
   };
 
-  const handleToggleFavorite = async (file: ZiplineFile) => {
-    try {
-      await ziplineClient.toggleFileFavorite(file.id);
-      showToast({
-        style: Toast.Style.Success,
-        title: file.favorite ? "Removed from favorites" : "Added to favorites",
-      });
-      loadFiles(state.page, state.searchText);
-    } catch (error) {
-      showToast({
-        style: Toast.Style.Failure,
-        title: "Failed to toggle favorite",
-        message: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-  };
 
   const handleDeleteFile = async (file: ZiplineFile) => {
     const confirmed = await confirmAlert({
       title: "Delete File",
-      message: `Are you sure you want to delete "${file.filename}"? This action cannot be undone.`,
+      message: `Are you sure you want to delete "${file.originalName || file.name}"? This action cannot be undone.`,
       primaryAction: {
         title: "Delete",
         style: Alert.ActionStyle.Destructive,
@@ -109,12 +85,13 @@ export default function BrowseUploads() {
 
     if (confirmed) {
       try {
+        const ziplineClient = createZiplineClient();
         await ziplineClient.deleteFile(file.id);
         showToast({
           style: Toast.Style.Success,
           title: "File deleted successfully",
         });
-        loadFiles(state.page, state.searchText);
+        loadFiles(page, searchText);
       } catch (error) {
         showToast({
           style: Toast.Style.Failure,
@@ -125,8 +102,10 @@ export default function BrowseUploads() {
     }
   };
 
-  const handleCopyUrl = async (url: string) => {
-    await Clipboard.copy(url);
+  const handleCopyUrl = async (file: ZiplineFile) => {
+    const ziplineClient = createZiplineClient();
+    const fullUrl = `${ziplineClient.baseUrl}${file.url}`;
+    await Clipboard.copy(fullUrl);
     showToast({
       style: Toast.Style.Success,
       title: "URL copied to clipboard",
@@ -134,55 +113,60 @@ export default function BrowseUploads() {
   };
 
   const handleNextPage = () => {
-    if (state.page < state.totalPages) {
-      loadFiles(state.page + 1, state.searchText);
+    if (page < totalPages) {
+      loadFiles(page + 1, searchText);
     }
   };
 
   const handlePreviousPage = () => {
-    if (state.page > 1) {
-      loadFiles(state.page - 1, state.searchText);
+    if (page > 1) {
+      loadFiles(page - 1, searchText);
     }
   };
 
   return (
     <List
-      isLoading={state.loading}
+      isLoading={loading}
       onSearchTextChange={handleSearch}
       searchBarPlaceholder="Search your uploads..."
-      navigationTitle={`Uploads (${state.totalCount} total)`}
+      navigationTitle={`Uploads (${totalCount} total)`}
     >
-      {state.error ? (
+      {error ? (
         <List.EmptyView
           icon={Icon.ExclamationMark}
           title="Error Loading Files"
-          description={state.error}
+          description={error}
           actions={
             <ActionPanel>
-              <Action title="Retry" onAction={() => loadFiles(state.page, state.searchText)} />
+              <Action
+                title="Retry"
+                onAction={() => loadFiles(page, searchText)}
+              />
             </ActionPanel>
           }
         />
-      ) : state.files.length === 0 && !state.loading ? (
+      ) : files?.length === 0 && !loading ? (
         <List.EmptyView
           icon={Icon.Document}
           title="No Files Found"
-          description={state.searchText ? "Try adjusting your search query" : "Upload your first file to get started"}
+          description={
+            searchText
+              ? "Try adjusting your search query"
+              : "Upload your first file to get started"
+          }
         />
       ) : (
         <>
-          {state.files.map((file) => (
+          {files?.map((file) => (
             <List.Item
               key={file.id}
-              title={file.filename}
-              subtitle={`${formatFileSize(file.size)} • ${formatDate(file.upload_date)}`}
+              title={file.originalName || file.name}
+              subtitle={formatDate(file.createdAt)}
               icon={{
-                source: getMimeTypeIcon(file.mimetype),
-                tintColor: file.favorite ? Color.Yellow : undefined,
+                source: getMimeTypeIcon(file.type),
               }}
               accessories={[
                 { text: `${file.views} views` },
-                file.favorite ? { icon: { source: Icon.Star, tintColor: Color.Yellow } } : {},
               ]}
               actions={
                 <ActionPanel>
@@ -190,18 +174,16 @@ export default function BrowseUploads() {
                     <Action
                       title="Copy URL"
                       icon={Icon.Link}
-                      onAction={() => handleCopyUrl(file.url)}
+                      onAction={() => handleCopyUrl(file)}
                     />
                     <Action
                       title="Open in Browser"
                       icon={Icon.Globe}
-                      onAction={() => open(file.url)}
-                    />
-                    <Action
-                      title={file.favorite ? "Remove from Favorites" : "Add to Favorites"}
-                      icon={file.favorite ? Icon.StarDisabled : Icon.Star}
-                      onAction={() => handleToggleFavorite(file)}
-                      shortcut={{ modifiers: ["cmd"], key: "f" }}
+                      onAction={() => {
+                        const ziplineClient = createZiplineClient();
+                        const fullUrl = `${ziplineClient.baseUrl}${file.url}`;
+                        open(fullUrl);
+                      }}
                     />
                   </ActionPanel.Section>
                   <ActionPanel.Section title="Danger Zone">
@@ -210,11 +192,11 @@ export default function BrowseUploads() {
                       icon={Icon.Trash}
                       style={Action.Style.Destructive}
                       onAction={() => handleDeleteFile(file)}
-                      shortcut={{ modifiers: ["cmd"], key: "delete" }}
+                      shortcut={{ modifiers: ["cmd", "shift"], key: "delete" }}
                     />
                   </ActionPanel.Section>
                   <ActionPanel.Section title="Navigation">
-                    {state.page > 1 && (
+                    {page > 1 && (
                       <Action
                         title="Previous Page"
                         icon={Icon.ArrowLeft}
@@ -222,7 +204,7 @@ export default function BrowseUploads() {
                         shortcut={{ modifiers: ["cmd"], key: "arrowLeft" }}
                       />
                     )}
-                    {state.page < state.totalPages && (
+                    {page < totalPages && (
                       <Action
                         title="Next Page"
                         icon={Icon.ArrowRight}
@@ -233,7 +215,7 @@ export default function BrowseUploads() {
                     <Action
                       title="Refresh"
                       icon={Icon.ArrowClockwise}
-                      onAction={() => loadFiles(state.page, state.searchText)}
+                      onAction={() => loadFiles(page, searchText)}
                       shortcut={{ modifiers: ["cmd"], key: "r" }}
                     />
                   </ActionPanel.Section>
@@ -241,20 +223,20 @@ export default function BrowseUploads() {
               }
             />
           ))}
-          {state.totalPages > 1 && (
+          {totalPages > 1 && (
             <List.Item
-              title={`Page ${state.page} of ${state.totalPages}`}
+              title={`Page ${page} of ${totalPages}`}
               icon={Icon.Dot}
               actions={
                 <ActionPanel>
-                  {state.page > 1 && (
+                  {page > 1 && (
                     <Action
                       title="Previous Page"
                       icon={Icon.ArrowLeft}
                       onAction={handlePreviousPage}
                     />
                   )}
-                  {state.page < state.totalPages && (
+                  {page < totalPages && (
                     <Action
                       title="Next Page"
                       icon={Icon.ArrowRight}
