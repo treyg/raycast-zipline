@@ -42,7 +42,10 @@ export default function RecentUploads() {
 
       // Sort by upload date (most recent first) and take first 10
       const sortedFiles = response
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        )
         .slice(0, 10);
 
       setState((prev) => ({

@@ -1,5 +1,5 @@
 {
-  "name": "raycast-zipline",
+  "name": "zipline",
   "title": "Zipline",
   "description": "Manage your Zipline uploads - browse, upload, and share files",
   "icon": "zipline-icon.png",
@@ -40,16 +40,46 @@
           "placeholder": "File Type",
           "required": false,
           "data": [
-            { "title": "Text", "value": "txt" },
-            { "title": "Markdown", "value": "md" },
-            { "title": "JSON", "value": "json" },
-            { "title": "JavaScript", "value": "js" },
-            { "title": "TypeScript", "value": "ts" },
-            { "title": "Python", "value": "py" },
-            { "title": "HTML", "value": "html" },
-            { "title": "CSS", "value": "css" },
-            { "title": "SQL", "value": "sql" },
-            { "title": "XML", "value": "xml" }
+            {
+              "title": "Text",
+              "value": "txt"
+            },
+            {
+              "title": "Markdown",
+              "value": "md"
+            },
+            {
+              "title": "JSON",
+              "value": "json"
+            },
+            {
+              "title": "JavaScript",
+              "value": "js"
+            },
+            {
+              "title": "TypeScript",
+              "value": "ts"
+            },
+            {
+              "title": "Python",
+              "value": "py"
+            },
+            {
+              "title": "HTML",
+              "value": "html"
+            },
+            {
+              "title": "CSS",
+              "value": "css"
+            },
+            {
+              "title": "SQL",
+              "value": "sql"
+            },
+            {
+              "title": "XML",
+              "value": "xml"
+            }
           ]
         }
       ]

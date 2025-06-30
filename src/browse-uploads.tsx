@@ -31,12 +31,11 @@ export default function BrowseUploads() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
-
   const loadFiles = async (pageNum: number = 1, search?: string) => {
     try {
       setLoading(true);
       setError(undefined);
-      
+
       const ziplineClient = createZiplineClient();
       const pageSize = getPageSize();
 
@@ -44,7 +43,6 @@ export default function BrowseUploads() {
         search: search || undefined,
         page: pageNum,
       });
-
 
       setFiles(response || []);
       setLoading(false);
@@ -71,7 +69,6 @@ export default function BrowseUploads() {
     setSearchText(text);
     loadFiles(1, text);
   };
-
 
   const handleDeleteFile = async (file: ZiplineFile) => {
     const confirmed = await confirmAlert({
@@ -165,9 +162,7 @@ export default function BrowseUploads() {
               icon={{
                 source: getMimeTypeIcon(file.type),
               }}
-              accessories={[
-                { text: `${file.views} views` },
-              ]}
+              accessories={[{ text: `${file.views} views` }]}
               actions={
                 <ActionPanel>
                   <ActionPanel.Section title="File Actions">

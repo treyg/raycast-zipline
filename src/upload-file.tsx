@@ -93,7 +93,11 @@ export default function UploadFile() {
           options.expiresAt = values.expiresAt.trim();
         }
 
-        const response = await ziplineClient.uploadFile(filePath, fileName, options);
+        const response = await ziplineClient.uploadFile(
+          filePath,
+          fileName,
+          options,
+        );
 
         if (Array.isArray(response.files) && response.files.length > 0) {
           uploadedUrls.push(response.files[0].url);
@@ -162,11 +166,7 @@ export default function UploadFile() {
         <Form.Dropdown.Item value="DATE" title="Date-based" icon="📅" />
         <Form.Dropdown.Item value="UUID" title="UUID" icon="🔑" />
         <Form.Dropdown.Item value="GFYCAT" title="Gfycat-style" icon="🐱" />
-        <Form.Dropdown.Item
-          value="NAME"
-          title="Original filename"
-          icon="📝"
-        />
+        <Form.Dropdown.Item value="NAME" title="Original filename" icon="📝" />
       </Form.Dropdown>
 
       <Form.Checkbox
