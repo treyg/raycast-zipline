@@ -9,7 +9,7 @@
     <img src="https://img.shields.io/github/followers/treyg?label=Follow%20treyg&style=social" alt="Follow @treyg">
   </a>
   <a href="https://github.com/treyg/raycast-zipline/stargazers">
-    <img src="https://img.shields.io/github/stars/treyg/raycast-zipline?style=social" alt="Stars">
+    <img src="https://img.shields.io/github/stars/treyg/zipline?style=social" alt="Stars">
   </a>
   <a href="https://www.raycast.com/treyg/zipline">
     <img src="https://img.shields.io/badge/Raycast-Store-red.svg" alt="Zipline on Raycast store.">
