@@ -1,4 +1,4 @@
-import fetch from "node-fetch";
+import fetch, { RequestInit } from "node-fetch";
 import fs from "fs";
 import FormData from "form-data";
 import {
@@ -34,7 +34,7 @@ export class ZiplineAPI {
     const response = await fetch(url, {
       ...options,
       headers,
-    } as RequestInit);
+    });
 
     if (!response.ok) {
       let errorMessage;
@@ -133,7 +133,7 @@ export class ZiplineAPI {
     const response = await fetch(`${this.baseUrl}/api/upload`, {
       method: "POST",
       headers,
-      body: formData as BodyInit,
+      body: formData,
     });
 
     if (!response.ok) {
