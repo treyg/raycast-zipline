@@ -13,7 +13,6 @@ import { useEffect, useState } from "react";
 import { ZiplineFile } from "./types/zipline";
 import {
   createZiplineClient,
-  formatFileSize,
   formatDate,
   getMimeTypeIcon,
 } from "./utils/preferences";
@@ -142,7 +141,7 @@ export default function RecentUploads() {
           description="Upload your first file to see it here"
         />
       ) : (
-        state.files.map((file, index) => (
+        state.files.map((file) => (
           <List.Item
             key={file.id}
             title={file.originalName || file.name}

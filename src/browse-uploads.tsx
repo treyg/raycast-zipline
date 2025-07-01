@@ -4,19 +4,16 @@ import {
   Action,
   showToast,
   Toast,
-  getPreferenceValues,
   Icon,
-  Color,
   Clipboard,
   confirmAlert,
   Alert,
   open,
 } from "@raycast/api";
 import { useState, useEffect } from "react";
-import { ZiplineFile, ZiplineFilesResponse } from "./types/zipline";
+import { ZiplineFile } from "./types/zipline";
 import {
   createZiplineClient,
-  formatFileSize,
   formatDate,
   getMimeTypeIcon,
   getPageSize,
@@ -37,7 +34,7 @@ export default function BrowseUploads() {
       setError(undefined);
 
       const ziplineClient = createZiplineClient();
-      const pageSize = getPageSize();
+      getPageSize();
 
       const response = await ziplineClient.getUserFiles({
         search: search || undefined,

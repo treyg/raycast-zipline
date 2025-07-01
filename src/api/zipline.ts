@@ -1,7 +1,8 @@
 import fetch from "node-fetch";
+import fs from "fs";
+import FormData from "form-data";
 import {
   ZiplineFile,
-  ZiplineFilesResponse,
   ZiplineUploadResponse,
   ZiplineStats,
   ZiplineUser,
@@ -33,7 +34,7 @@ export class ZiplineAPI {
     const response = await fetch(url, {
       ...options,
       headers,
-    } as any);
+    } as RequestInit);
 
     if (!response.ok) {
       let errorMessage;
@@ -43,7 +44,7 @@ export class ZiplineAPI {
           errorData.message ||
           errorData.error ||
           `HTTP ${response.status}: ${response.statusText}`;
-      } catch (e) {
+      } catch {
         errorMessage = `HTTP ${response.status}: ${response.statusText}`;
       }
       throw new Error(errorMessage);
@@ -74,9 +75,6 @@ export class ZiplineAPI {
     fileName: string,
     options: Partial<UploadOptions> = {},
   ): Promise<ZiplineUploadResponse> {
-    const fs = require("fs");
-    const FormData = require("form-data");
-
     // Check if file exists and has content
     if (!fs.existsSync(filePath)) {
       throw new Error(`File does not exist: ${filePath}`);
@@ -135,7 +133,7 @@ export class ZiplineAPI {
     const response = await fetch(`${this.baseUrl}/api/upload`, {
       method: "POST",
       headers,
-      body: formData as any,
+      body: formData as BodyInit,
     });
 
     if (!response.ok) {
@@ -182,7 +180,7 @@ export class ZiplineAPI {
     try {
       await this.getCurrentUser();
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   }

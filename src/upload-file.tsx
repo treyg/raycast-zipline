@@ -8,8 +8,8 @@ import {
   getSelectedFinderItems,
   Icon,
   Clipboard,
-  environment,
 } from "@raycast/api";
+import fs from "fs";
 import { useState, useEffect } from "react";
 import { createZiplineClient } from "./utils/preferences";
 import { UploadOptions } from "./types/zipline";
@@ -37,7 +37,7 @@ export default function UploadFile() {
         const filePaths = finderItems
           .filter((item) => {
             try {
-              const stats = require("fs").statSync(item.path);
+              const stats = fs.statSync(item.path);
               return stats.isFile();
             } catch {
               return false;
@@ -46,7 +46,7 @@ export default function UploadFile() {
           .map((item) => item.path);
 
         setSelectedFiles(filePaths);
-      } catch (error) {
+      } catch {
         // No files selected in Finder, that's okay
       }
     }

@@ -1,11 +1,7 @@
-import {
-  showToast,
-  Toast,
-  Clipboard,
-  closeMainWindow,
-  showHUD,
-  LaunchProps,
-} from "@raycast/api";
+import { Clipboard, closeMainWindow, showHUD, LaunchProps } from "@raycast/api";
+import fs from "fs";
+import os from "os";
+import path from "path";
 import { createZiplineClient } from "./utils/preferences";
 
 interface UploadClipboardInstantArguments {
@@ -34,9 +30,6 @@ export default async function UploadClipboardInstant(
     const ziplineClient = createZiplineClient();
 
     // Create a temporary file - the server seems to need an actual file
-    const fs = require("fs");
-    const os = require("os");
-    const path = require("path");
 
     const tempDir = os.tmpdir();
     const extension = fileType || "txt";
@@ -58,7 +51,7 @@ export default async function UploadClipboardInstant(
     // Clean up temporary file
     try {
       fs.unlinkSync(tempFilePath);
-    } catch (e) {
+    } catch {
       // Ignore cleanup errors
     }
 
